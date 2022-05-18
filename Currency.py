@@ -9,7 +9,9 @@ try:
     path != None
 except:
     path,_ = request.urlretrieve(URL)
+    
 df = pd.read_csv(path)
+rdf = df.copy() # raw dataframe --> this is just for reference in the future
 
 # Renaming the columns:
 def columnNames(columnName):
@@ -23,21 +25,30 @@ def columnNames(columnName):
     
     splitName = columnName.split(' ')
     return splitName[0].strip().upper()
-
+# The raw data shows the currency 
 def rowUnit(rows):
     return rows.split('_Per_')[-1]
 
+# Pass the columnNames function into the rename method, 
+# this will change the names of the column into something easier to understand
 df.rename(columns=columnNames, inplace=True)
 df = df.transpose()
+
+# Pandas is easier to work with using row by row operations
 df[0] = df[0].apply(rowUnit)
 df = df.transpose()
 
+# Our 'Final' dataframe cuts down on the rows that we need.
+# Rows 0, 2, [-1] correspond to the "from" currency, "to" currency, and latest exchange rate
 Final = df.loc[[0,2,df.index[-1]]]
 Final.drop(columns = 'SERIES',inplace=True)
-Final = Final.transpose()
 
+# We transpose again to change the data type on the last column for our df.
+Final = Final.transpose()
 Final = Final.astype({df.index[-1]: float})
 
+# To make the analysis and class creation easier, we make all "from" currencies equal USD, and 
+# We apply the an inverse on the current exchange rate.
 for index in Final.index:
     if Final.loc[index][0] != 'USD':
         
@@ -48,7 +59,12 @@ for index in Final.index:
         Final.loc[index,2] = currentCountry
         Final.loc[index,df.index[-1]] = round(newvalue,4)
 
+# We rename out columns from what their indexes used to be to something intuitive
 Final.rename(columns={0:'From',2:'To',df.index[-1]:'X_Rate'},inplace=True)
+
+# The class is meant to take dictionaries as arguments, so we will transpose the df one more time
+# this makes the countries the columns, it also makes our dictionary easier to read
+# Final format should be: {Country: {From: XX, To: XX. X_Rate: XX}}
 CountryDictionary = Final.transpose().to_dict()
 
 class CountryCurrency:
