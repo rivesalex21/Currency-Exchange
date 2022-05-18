@@ -42,13 +42,13 @@ for index in Final.index:
     if Final.loc[index][0] != 'USD':
         
         currentCountry = Final.loc[index][0]
-        newvalue = 1/Final.loc[index][14]
+        newvalue = 1/Final.loc[index][df.index[-1]]
         
         Final.loc[index,0] = 'USD' 
         Final.loc[index,2] = currentCountry
-        Final.loc[index,14] = round(newvalue,4)
+        Final.loc[index,df.index[-1]] = round(newvalue,4)
 
-Final.rename(columns={0:'From',2:'To',14:'X_Rate'},inplace=True)
+Final.rename(columns={0:'From',2:'To',df.index[-1]:'X_Rate'},inplace=True)
 CountryDictionary = Final.transpose().to_dict()
 
 class CountryCurrency:
@@ -133,8 +133,6 @@ class CountryCurrency:
     def showCountries(self):
         return self.COUNTRIES
 
-'''
 Xrates_2022_05_18 = CountryCurrency()
 Xrates_2022_05_18.addCountries(CountryDictionary)
 Xrates_2022_05_18.xchangeAmountByCurrency('USD','AUD',14000)
-'''
